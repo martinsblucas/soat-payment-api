@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class DomainEvent(BaseModel):
-    """Abstract base class for domain events"""
+    """Base class for domain events"""
 
     id: UUID = Field(
         description="Unique identifier for the event", default_factory=uuid4
