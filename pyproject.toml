@@ -4,18 +4,17 @@ version = "0.1.0"
 description = "The payment API service for Soat Tech Challenge"
 authors = ["Lucas Martins Barroso <lucasmartins.av@gmail.com>"]
 readme = "README.md"
-packages = [{include = "payment_api"}]
+packages = [{ include = "payment_api" }]
 
 [tool.poetry.dependencies]
 python = "^3.14"
-pydantic = {extras = ["email"], version = "^2.12.3"}
+pydantic = { extras = ["email"], version = "^2.12.3" }
 sqlalchemy = "^2.0.44"
 asyncpg = "^0.30.0"
 alembic = "^1.17.0"
 pydantic-settings = "^2.11.0"
 fastapi = "^0.119.1"
 uvicorn = "^0.38.0"
-dependency-injector = "^4.48.2"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.3.0"
