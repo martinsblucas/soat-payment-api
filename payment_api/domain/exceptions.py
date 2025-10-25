@@ -26,7 +26,8 @@ class PersistenceError(DomainException):
 
 class PaymentCreationError(DomainException):
     """An error to be raised by the payment gateway implementations when an error occurs
-    trying to create a payment."""
+    trying to create a payment. Also to be used by the create payment use case when an
+    error occurs during the creation process."""
 
     def __init__(self, message="An error occurred while trying to create a payment"):
         super().__init__(message)

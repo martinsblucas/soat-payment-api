@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from payment_api.application.commands import CreatePaymentCommand
 from payment_api.domain.entities import Payment
-from payment_api.domain.exceptions import PaymentCreationError, PersistenceError
+from payment_api.domain.exceptions import PaymentCreationError
 from payment_api.domain.ports import PaymentGateway, PaymentRepository
 from payment_api.domain.value_objects import PaymentStatus
 
@@ -21,7 +21,14 @@ class CreatePaymentUseCase:
         self.payment_gateway = payment_gateway
 
     async def execute(self, command: CreatePaymentCommand) -> Payment:
-        """Execute the use case to create a new payment"""
+        """Execute the use case to create a new payment
+
+        :param command: CreatePaymentCommand
+        :return: Payment
+        :raises PaymentCreationError: if there is an error during payment creation
+        :raises PersistenceError: if there is an error during data persistence to
+            the repository
+        """
 
         # validate
         if await self.payment_repository.exists_by_id(id=command.id):
@@ -49,9 +56,4 @@ class CreatePaymentUseCase:
             ) from e
 
         # save payment in repository
-        try:
-            return await self.payment_repository.save(payment=payment)
-        except PersistenceError as exc:
-            raise PaymentCreationError(
-                f"Error saving payment to repository: {str(exc)}"
-            ) from exc
+        return await self.payment_repository.save(payment=payment)
