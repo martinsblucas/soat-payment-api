@@ -5,8 +5,8 @@ from typing import AsyncIterator
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from payment_api.adapters.out import SAPaymentRepository
-from payment_api.domain.ports import PaymentRepository
+from payment_api.adapters.out import MPPaymentGateway, SAPaymentRepository
+from payment_api.domain.ports import PaymentGateway, PaymentRepository
 from payment_api.infrastructure.config import Settings
 from payment_api.infrastructure.mercado_pago import MercadoPagoAPIClient
 from payment_api.infrastructure.orm import SessionManager
@@ -47,3 +47,10 @@ def get_mercado_pago_client(
 ) -> MercadoPagoAPIClient:
     """Return a MercadoPagoAPIClient instance"""
     return MercadoPagoAPIClient(settings=settings, http_client=http_client)
+
+
+def get_payment_gateway(
+    settings: Settings, mp_client: MercadoPagoAPIClient
+) -> PaymentGateway:
+    """Return a MPPaymentGateway instance"""
+    return MPPaymentGateway(settings=settings, mp_client=mp_client)
