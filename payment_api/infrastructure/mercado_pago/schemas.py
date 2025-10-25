@@ -51,7 +51,7 @@ class MPCreateOrderOut(BaseModel):
 class MPOrder(BaseModel):
     """Schema representing an order in Mercado Pago."""
 
-    id: int = Field(..., description="Unique identifier for the order.")
+    id: str = Field(..., description="Unique identifier for the order.")
     status: MPOrderStatus = Field(..., description="Status of the order.")
     external_reference: str = Field(
         ..., description="External reference for the order."
@@ -61,7 +61,7 @@ class MPOrder(BaseModel):
 class MPPaymentOrder(BaseModel):
     """Schema representing the order associated with a payment in Mercado Pago."""
 
-    id: int = Field(..., description="Unique identifier for the order.")
+    id: str = Field(..., description="Unique identifier for the order.")
 
 
 class MPPayment(BaseModel):
