@@ -2,5 +2,6 @@
 
 from .create_payment import CreatePaymentCommand
 from .find_payment_by_id import FindPaymentByIdCommand
+from .render_qr_code import RenderQRCodeCommand
 
-__all__ = ["CreatePaymentCommand", "FindPaymentByIdCommand"]
+__all__ = ["CreatePaymentCommand", "FindPaymentByIdCommand", "RenderQRCodeCommand"]
