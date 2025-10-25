@@ -1,3 +1,5 @@
+"""Module for rendering QR codes"""
+
 from qrcode import QRCode
 from qrcode.image.pil import PilImage
 
