@@ -23,8 +23,10 @@ class CreatePaymentUseCase:
     async def execute(self, command: CreatePaymentCommand) -> Payment:
         """Execute the use case to create a new payment
 
-        :param command: CreatePaymentCommand
-        :return: Payment
+        :param command: command containing payment details
+        :type command: CreatePaymentCommand
+        :return: Payment entity representing the created payment
+        :rtype: Payment
         :raises PaymentCreationError: if there is an error during payment creation
         :raises PersistenceError: if there is an error during data persistence to
             the repository

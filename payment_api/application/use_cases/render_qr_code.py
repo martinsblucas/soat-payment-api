@@ -19,8 +19,10 @@ class RenderQRCodeUseCase:
     async def execute(self, command: RenderQRCodeCommand) -> bytes:
         """Execute the use case to render a QR code
 
-        :param command: RenderQRCodeCommand
+        :param command: command containing payment ID
+        :type command: RenderQRCodeCommand
         :return: bytes representing the QR code image
+        :rtype: bytes
         """
 
         # Fetch the payment details using the payment ID

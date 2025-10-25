@@ -14,8 +14,10 @@ class FindPaymentByIdUseCase:
     async def execute(self, command: FindPaymentByIdCommand) -> Payment:
         """Execute the use case to find a payment by its ID
 
-        :param command: FindPaymentByIdCommand
-        :return: Payment
+        :param command: command containing payment ID
+        :type command: FindPaymentByIdCommand
+        :return: Payment entity corresponding to the given ID
+        :rtype: Payment
         :raises NotFound: if payment is not found
         :raises PersistenceError: if there is an error during data retrieval from
             the repository
