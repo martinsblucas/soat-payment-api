@@ -26,3 +26,6 @@ class Settings(BaseSettings):
     MERCADO_PAGO_USER_ID: str
     MERCADO_PAGO_POS: str
     MERCADO_PAGO_CALLBACK_URL: str
+
+    # Messaging
+    SQS_ORDER_CREATED_QUEUE_NAME: str
