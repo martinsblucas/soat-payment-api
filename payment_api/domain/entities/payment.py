@@ -29,23 +29,11 @@ class Payment(BaseModel):
             status.
         """
 
-        if self.payment_status != PaymentStatus.OPENED:
-            raise ValueError(
-                f"Unable to update a payment status from {self.payment_status} to "
-                f"{payment_status}"
-            )
-
-        if payment_status == PaymentStatus.OPENED:
-            raise ValueError(
-                f"Unable to update a payment status from {self.payment_status} to "
-                f"{payment_status}"
-            )
-
+        self._check_if_is_valid_to_finalize(payment_status)
         self.payment_status = payment_status
-        self.timestamp = datetime.now()
         return self
 
-    def check_if_is_valid_to_finalize(
+    def _check_if_is_valid_to_finalize(
         self, new_payment_status: PaymentStatus
     ) -> "Payment":
         """Check if the payment can be finalized with the new status.

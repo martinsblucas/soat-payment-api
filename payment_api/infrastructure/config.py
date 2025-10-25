@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     DB_DSN: str
     DB_ECHO: bool = False
 
+    # HTTP Client
+    HTTP_TIMEOUT: float = 10.0  # seconds
+
     # Mercado Pago Integration
     MERCADO_PAGO_ACCESS_TOKEN: str
     MERCADO_PAGO_USER_ID: str
