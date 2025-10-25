@@ -58,5 +58,14 @@ class MPOrder(BaseModel):
     )
 
 
+class MPPaymentOrder(BaseModel):
+    """Schema representing the order associated with a payment in Mercado Pago."""
+
+    id: int = Field(..., description="Unique identifier for the order.")
+
+
 class MPPayment(BaseModel):
     """Schema representing a payment in Mercado Pago."""
+
+    order: MPPaymentOrder = Field(..., description="Order associated with the payment.")
+    status: str = Field(..., description="Status of the payment.")

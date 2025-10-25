@@ -6,10 +6,14 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from payment_api.adapters.out import MPPaymentGateway, SAPaymentRepository
-from payment_api.application.use_cases.ports import AbstractQRCodeRenderer
+from payment_api.application.use_cases.ports import (
+    AbstractMercadoPagoClient,
+    AbstractQRCodeRenderer,
+)
 from payment_api.domain.ports import PaymentGateway, PaymentRepository
 from payment_api.infrastructure.config import Settings
 from payment_api.infrastructure.mercado_pago import MercadoPagoAPIClient
+from payment_api.infrastructure.mercado_pago_client import MercadoPagoClient
 from payment_api.infrastructure.orm import SessionManager
 from payment_api.infrastructure.qr_code_renderer import QRCodeRenderer
 
@@ -44,7 +48,7 @@ def get_payment_repository(session: AsyncSession) -> PaymentRepository:
     return SAPaymentRepository(session=session)
 
 
-def get_mercado_pago_client(
+def get_mercado_pago_api_client(
     settings: Settings, http_client: AsyncClient
 ) -> MercadoPagoAPIClient:
     """Return a MercadoPagoAPIClient instance"""
@@ -61,3 +65,10 @@ def get_payment_gateway(
 def get_qr_code_renderer() -> AbstractQRCodeRenderer:
     """Return a QRCodeRenderer instance"""
     return QRCodeRenderer()
+
+
+def get_mercado_pago_client(
+    mercado_pago_api_client: MercadoPagoAPIClient,
+) -> AbstractMercadoPagoClient:
+    """Return a MercadoPagoClient instance"""
+    return MercadoPagoClient(api_client=mercado_pago_api_client)

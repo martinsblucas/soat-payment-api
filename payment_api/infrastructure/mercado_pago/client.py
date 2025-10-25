@@ -57,10 +57,11 @@ class MercadoPagoAPIClient:
 
         return MPCreateOrderOut(**response.json())
 
-    async def find_order_by_id(self, order_id: int) -> MPOrder:
+    async def find_order_by_id(self, order_id: str) -> MPOrder:
         """Find an order in Mercado Pago by its ID.
 
         :param order_id: The ID of the order to find.
+        :type order_id: str
         :return: The found order.
         :raises MPNotFoundError: If the order is not found.
         :raises MPClientError: If there is an error with the Mercado Pago API.
@@ -77,10 +78,11 @@ class MercadoPagoAPIClient:
 
         return MPOrder(**response.json())
 
-    async def find_payment_by_id(self, payment_id: int) -> MPPayment:
+    async def find_payment_by_id(self, payment_id: str) -> MPPayment:
         """Find a payment in Mercado Pago by its ID.
 
         :param payment_id: The ID of the payment to find.
+        :type payment_id: str
         :return: The found payment.
         :raises MPNotFoundError: If the payment is not found.
         :raises MPClientError: If there is an error with the Mercado Pago API.
