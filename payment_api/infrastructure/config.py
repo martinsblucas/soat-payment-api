@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     # General
     PROJECT_NAME: str = "SOAT Tech Challenge Payment Api"
+    VERSION: str = "1.0.0"
     ENVIRONMENT: str = "PRD"
     API_ROOT_PATH: str = "/api"
 

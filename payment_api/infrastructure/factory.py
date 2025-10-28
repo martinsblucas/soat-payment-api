@@ -1,11 +1,21 @@
 """Factory module for manual dependency injection"""
 
+from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
+from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from payment_api.adapters.inbound.listeners import OrderCreatedListener
+from payment_api.adapters.inbound.rest.v1 import payment_router_v1
 from payment_api.adapters.out import MPPaymentGateway, SAPaymentRepository
+from payment_api.application.use_cases import (
+    CreatePaymentFromOrderUseCase,
+    FinalizePaymentByMercadoPagoPaymentIdUseCase,
+    FindPaymentByIdUseCase,
+    RenderQRCodeUseCase,
+)
 from payment_api.application.use_cases.ports import (
     AbstractMercadoPagoClient,
     AbstractQRCodeRenderer,
@@ -34,6 +44,7 @@ async def get_db_session(
     session_manager: SessionManager,
 ) -> AsyncIterator[AsyncSession]:
     """Get a database session"""
+
     async with session_manager.session() as session:
         yield session
 
@@ -72,3 +83,79 @@ def get_mercado_pago_client(
 ) -> AbstractMercadoPagoClient:
     """Return a MercadoPagoClient instance"""
     return MercadoPagoClient(api_client=mercado_pago_api_client)
+
+
+def get_create_payment_from_order_use_case(
+    payment_repository: PaymentRepository,
+    payment_gateway: PaymentGateway,
+) -> CreatePaymentFromOrderUseCase:
+    """Return a CreatePaymentFromOrderUseCase instance"""
+    return CreatePaymentFromOrderUseCase(
+        payment_repository=payment_repository,
+        payment_gateway=payment_gateway,
+    )
+
+
+def get_find_payment_by_id_use_case(
+    payment_repository: PaymentRepository,
+) -> FindPaymentByIdUseCase:
+    """Return a FindPaymentByIdUseCase instance"""
+    return FindPaymentByIdUseCase(payment_repository=payment_repository)
+
+
+def get_render_qr_code_use_case(
+    payment_repository: PaymentRepository,
+    qr_code_renderer: AbstractQRCodeRenderer,
+) -> RenderQRCodeUseCase:
+    """Return a RenderQRCodeUseCase instance"""
+    return RenderQRCodeUseCase(
+        payment_repository=payment_repository, qr_code_renderer=qr_code_renderer
+    )
+
+
+def get_finalize_payment_by_mercado_pago_payment_id_use_case(
+    payment_repository: PaymentRepository,
+    mercado_pago_client: AbstractMercadoPagoClient,
+) -> FinalizePaymentByMercadoPagoPaymentIdUseCase:
+    """Return a FinalizePaymentByMercadoPagoPaymentIdUseCase instance"""
+    return FinalizePaymentByMercadoPagoPaymentIdUseCase(
+        payment_repository=payment_repository,
+        mercado_pago_client=mercado_pago_client,
+    )
+
+
+def create_order_created_listener(
+    session: AsyncSession, use_case: CreatePaymentFromOrderUseCase, settings: Settings
+) -> OrderCreatedListener:
+    """Create an OrderCreatedListener instance"""
+    return OrderCreatedListener(session=session, use_case=use_case, settings=settings)
+
+
+def create_api() -> FastAPI:
+    """Create FastAPI application instance"""
+
+    app = FastAPI(lifespan=fastapi_lifespan, version="1.0.0")
+    app.include_router(payment_router_v1)
+    return app
+
+
+@asynccontextmanager
+async def fastapi_lifespan(app_instance: FastAPI):
+    """Lifespan context manager for FastAPI application"""
+
+    # Application state setup
+    app_instance.state.settings = get_settings()
+    app_instance.title = app_instance.state.settings.PROJECT_NAME
+    app_instance.version = app_instance.state.settings.VERSION
+    app_instance.state.session_manager = get_session_manager(
+        settings=app_instance.state.settings
+    )
+
+    app_instance.state.http_client = get_http_client(
+        settings=app_instance.state.settings
+    )
+
+    # Application state teardown
+    yield
+    await app_instance.state.session_manager.close()
+    await app_instance.state.http_client.aclose()
