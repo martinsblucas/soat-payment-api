@@ -19,7 +19,7 @@ class MPOrderStatus(str, Enum):
 class MPOrder(BaseModel):
     """Schema representing an order in Mercado Pago."""
 
-    id: str = Field(..., description="Unique identifier for the order.")
+    id: int = Field(..., description="Unique identifier for the order.")
     status: MPOrderStatus = Field(..., description="Status of the order.")
     external_reference: str = Field(
         ..., description="External reference for the order."
@@ -44,11 +44,11 @@ class AbstractMercadoPagoClient(ABC):
     application layer."""
 
     @abstractmethod
-    async def find_order_by_id(self, order_id: str) -> MPOrder:
+    async def find_order_by_id(self, order_id: int) -> MPOrder:
         """Fetch an order from Mercado Pago by its ID.
 
         :param order_id: The unique identifier of the order in Mercado Pago.
-        :type order_id: str
+        :type order_id: int
         :return: An instance of MPOrder representing the fetched order.
         """
 

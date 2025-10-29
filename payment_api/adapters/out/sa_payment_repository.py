@@ -1,6 +1,6 @@
 """SQL Alchemy implementation of the PaymentRepository port"""
 
-from sqlalchemy import exists, insert, select
+from sqlalchemy import exists, insert, select, update
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,10 +25,12 @@ class SAPaymentRepository(PaymentRepository):
             return PaymentOut.model_validate(result.scalars().one())
 
         except NoResultFound as error:
-            raise NotFound() from error
+            raise NotFound(f"No payment found with ID: {payment_id}") from error
 
         except SQLAlchemyError as error:
-            raise PersistenceError() from error
+            raise PersistenceError(
+                f"Error finding payment by ID {payment_id}: {str(error)}"
+            ) from error
 
     async def exists_by_id(self, payment_id: str) -> bool:
         try:
@@ -39,7 +41,9 @@ class SAPaymentRepository(PaymentRepository):
             return result.scalar()
 
         except SQLAlchemyError as error:
-            raise PersistenceError() from error
+            raise PersistenceError(
+                f"Error checking payment existence by ID {payment_id}: {str(error)}"
+            ) from error
 
     async def exists_by_external_id(self, external_id: str) -> bool:
         try:
@@ -50,9 +54,31 @@ class SAPaymentRepository(PaymentRepository):
             return result.scalar()
 
         except SQLAlchemyError as error:
-            raise PersistenceError() from error
+            raise PersistenceError(
+                f"Error checking payment existence by external ID {external_id}:"
+                f"{str(error)}"
+            ) from error
 
     async def save(self, payment: PaymentIn) -> PaymentOut:
+        """Save a payment into the repository
+        :param payment: Payment to be saved
+        :type payment: PaymentIn
+        :return: Saved Payment
+        :rtype: PaymentOut
+        """
+
+        if await self.exists_by_id(payment_id=payment.id):
+            return await self._update(payment=payment)
+        return await self._insert(payment=payment)
+
+    async def _insert(self, payment: PaymentIn) -> PaymentOut:
+        """Insert a new payment into the repository
+
+        :param payment: Payment to be inserted
+        :type payment: PaymentIn
+        :return: Inserted Payment
+        :rtype: PaymentOut
+        """
         try:
             result = await self.session.execute(
                 insert(PaymentModel)
@@ -60,9 +86,36 @@ class SAPaymentRepository(PaymentRepository):
                 .returning(PaymentModel)
             )
 
-            find_payment = PaymentOut.model_validate(result.scalars().one())
+            inserted_payment = PaymentOut.model_validate(result.scalars().one())
             await self.session.commit()
-            return find_payment
+            return inserted_payment
 
         except SQLAlchemyError as error:
-            raise PersistenceError() from error
+            raise PersistenceError(
+                f"Error inserting payment {payment.id}: {str(error)}"
+            ) from error
+
+    async def _update(self, payment: PaymentIn) -> PaymentOut:
+        """Update an existing payment in the repository
+
+        :param payment: Payment to be updated
+        :type payment: PaymentIn
+        :return: Updated Payment
+        :rtype: PaymentOut
+        """
+        try:
+            result = await self.session.execute(
+                update(PaymentModel)
+                .where(PaymentModel.id == payment.id)
+                .values(**payment.model_dump())
+                .returning(PaymentModel)
+            )
+
+            updated_payment = PaymentOut.model_validate(result.scalars().one())
+            await self.session.commit()
+            return updated_payment
+
+        except SQLAlchemyError as error:
+            raise PersistenceError(
+                f"Error updating payment {payment.id}: {str(error)}"
+            ) from error

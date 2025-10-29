@@ -41,12 +41,12 @@ class FinalizePaymentByMercadoPagoPaymentIdUseCase:
 
         # find Mercado Pago order associated with the payment
         mp_order = await self.mercado_pago_client.find_order_by_id(
-            order_id=mp_payment.order.id
+            order_id=int(mp_payment.order.id)
         )
 
         # validate if payment with Mercado Pago ID already exists
         order_id = mp_order.external_reference
-        external_id = mp_order.id
+        external_id = str(mp_order.id)
         if await self.payment_repository.exists_by_external_id(external_id=external_id):
             raise ValueError(f"Payment with external ID {external_id} already exists")
 

@@ -14,7 +14,7 @@ class MercadoPagoClient(AbstractMercadoPagoClient):
     def __init__(self, api_client: MercadoPagoAPIClient):
         self.api_client = api_client
 
-    async def find_order_by_id(self, order_id: str) -> MPOrder:
+    async def find_order_by_id(self, order_id: int) -> MPOrder:
         order = await self.api_client.find_order_by_id(order_id=order_id)
         return MPOrder.model_validate(order.model_dump())
 

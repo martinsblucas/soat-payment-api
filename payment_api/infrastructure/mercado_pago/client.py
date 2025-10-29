@@ -24,7 +24,6 @@ class MercadoPagoAPIClient:
         self.access_token = settings.MERCADO_PAGO_ACCESS_TOKEN
         self.user_id = settings.MERCADO_PAGO_USER_ID
         self.pos = settings.MERCADO_PAGO_POS
-        self.callback_url = settings.MERCADO_PAGO_CALLBACK_URL
         self.http_client = http_client
         self.base_url = "https://api.mercadopago.com"
 
@@ -55,11 +54,11 @@ class MercadoPagoAPIClient:
 
         return MPCreateOrderOut(**response.json())
 
-    async def find_order_by_id(self, order_id: str) -> MPOrder:
+    async def find_order_by_id(self, order_id: int) -> MPOrder:
         """Find an order in Mercado Pago by its ID.
 
         :param order_id: The ID of the order to find.
-        :type order_id: str
+        :type order_id: int
         :return: The found order.
         :raises MPNotFoundError: If the order is not found.
         :raises MPClientError: If there is an error with the Mercado Pago API.
