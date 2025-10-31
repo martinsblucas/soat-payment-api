@@ -1,5 +1,6 @@
 """Factory module for manual dependency injection"""
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -30,6 +31,8 @@ from payment_api.infrastructure.mercado_pago import MercadoPagoAPIClient
 from payment_api.infrastructure.mercado_pago_client import MercadoPagoClient
 from payment_api.infrastructure.orm import SessionManager
 from payment_api.infrastructure.qr_code_renderer import QRCodeRenderer
+
+logger = logging.getLogger(__name__)
 
 
 def get_settings() -> Settings:
@@ -158,7 +161,9 @@ def create_order_created_listener(
 def create_api() -> FastAPI:
     """Create FastAPI application instance"""
 
+    logger.info("Creating FastAPI application instance")
     app = FastAPI(lifespan=fastapi_lifespan)
+    logger.info("Including payment router v1")
     app.include_router(payment_router_v1)
     return app
 
@@ -168,19 +173,31 @@ async def fastapi_lifespan(app_instance: FastAPI):
     """Lifespan context manager for FastAPI application"""
 
     # Application state setup
+    logger.info("Loading application settings")
     app_instance.state.settings = get_settings()
     app_instance.title = app_instance.state.settings.PROJECT_NAME
     app_instance.version = app_instance.state.settings.VERSION
     app_instance.root_path = app_instance.state.settings.API_ROOT_PATH
+    logger.info(
+        "Application settings loaded title=%s version=%s root_path=%s",
+        app_instance.title,
+        app_instance.version,
+        app_instance.root_path,
+    )
+
+    logger.info("Starting session manager")
     app_instance.state.session_manager = get_session_manager(
         settings=app_instance.state.settings
     )
 
+    logger.info("Starting HTTP client")
     app_instance.state.http_client = get_http_client(
         settings=app_instance.state.settings
     )
 
     # Application state teardown
     yield
+    logger.info("Closing session manager")
     await app_instance.state.session_manager.close()
+    logger.info("Closing HTTP client")
     await app_instance.state.http_client.aclose()

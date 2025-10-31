@@ -27,7 +27,7 @@ class SAPaymentRepository(PaymentRepository):
         except NoResultFound as error:
             raise NotFound(f"No payment found with ID: {payment_id}") from error
 
-        except SQLAlchemyError as error:
+        except (SQLAlchemyError, OSError) as error:
             raise PersistenceError(
                 f"Error finding payment by ID {payment_id}: {str(error)}"
             ) from error
@@ -40,7 +40,7 @@ class SAPaymentRepository(PaymentRepository):
 
             return result.scalar()
 
-        except SQLAlchemyError as error:
+        except (SQLAlchemyError, OSError) as error:
             raise PersistenceError(
                 f"Error checking payment existence by ID {payment_id}: {str(error)}"
             ) from error
@@ -53,7 +53,7 @@ class SAPaymentRepository(PaymentRepository):
 
             return result.scalar()
 
-        except SQLAlchemyError as error:
+        except (SQLAlchemyError, OSError) as error:
             raise PersistenceError(
                 f"Error checking payment existence by external ID {external_id}:"
                 f"{str(error)}"
@@ -90,7 +90,7 @@ class SAPaymentRepository(PaymentRepository):
             await self.session.commit()
             return inserted_payment
 
-        except SQLAlchemyError as error:
+        except (SQLAlchemyError, OSError) as error:
             raise PersistenceError(
                 f"Error inserting payment {payment.id}: {str(error)}"
             ) from error
@@ -115,7 +115,7 @@ class SAPaymentRepository(PaymentRepository):
             await self.session.commit()
             return updated_payment
 
-        except SQLAlchemyError as error:
+        except (SQLAlchemyError, OSError) as error:
             raise PersistenceError(
                 f"Error updating payment {payment.id}: {str(error)}"
             ) from error

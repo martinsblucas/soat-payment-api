@@ -95,11 +95,10 @@ class OrderCreatedListener:
             message_id = await msg.message_id
             try:
                 await self.handler.handle(message=msg)
-            except Exception as e:
+            except Exception:
                 logger.error(
-                    "Failed to process message ID: %s: %s",
+                    "Failed to process message ID: %s",
                     message_id,
-                    str(e),
                     exc_info=True,
                 )
 

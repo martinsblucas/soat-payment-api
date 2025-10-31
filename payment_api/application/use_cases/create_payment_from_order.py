@@ -1,5 +1,6 @@
 """Use case for creating a new payment"""
 
+import logging
 from datetime import datetime, timedelta, timezone
 
 from payment_api.application.commands import CreatePaymentFromOrderCommand
@@ -7,6 +8,8 @@ from payment_api.domain.entities import PaymentIn, PaymentOut, Product
 from payment_api.domain.exceptions import PaymentCreationError
 from payment_api.domain.ports import PaymentGateway, PaymentRepository
 from payment_api.domain.value_objects import PaymentStatus
+
+logger = logging.getLogger(__name__)
 
 
 class CreatePaymentFromOrderUseCase:
@@ -31,6 +34,10 @@ class CreatePaymentFromOrderUseCase:
         :raises PersistenceError: if there is an error during data persistence to
             the repository
         """
+
+        logger.info(
+            "Called the use case to create a payment from order ID %s", command.order_id
+        )
 
         # validate
         if await self.payment_repository.exists_by_id(payment_id=command.order_id):
@@ -57,14 +64,7 @@ class CreatePaymentFromOrderUseCase:
         )
 
         # create payment in gateway
-        try:
-            payment = await self.payment_gateway.create(
-                payment=payment, products=products
-            )
-        except Exception as e:
-            raise PaymentCreationError(
-                f"Error creating payment in gateway: {str(e)}"
-            ) from e
+        payment = await self.payment_gateway.create(payment=payment, products=products)
 
         # save payment in repository
         return await self.payment_repository.save(payment=payment)

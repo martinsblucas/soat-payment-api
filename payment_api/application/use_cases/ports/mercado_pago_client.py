@@ -39,6 +39,10 @@ class MPPayment(BaseModel):
     status: str = Field(..., description="Status of the payment.")
 
 
+class MPClientError(Exception):
+    """Custom exception for Mercado Pago client errors."""
+
+
 class AbstractMercadoPagoClient(ABC):
     """Abstract client interface for interacting with Mercado Pago API in the
     application layer."""
@@ -50,6 +54,8 @@ class AbstractMercadoPagoClient(ABC):
         :param order_id: The unique identifier of the order in Mercado Pago.
         :type order_id: int
         :return: An instance of MPOrder representing the fetched order.
+        :rtype: MPOrder
+        :raises MPClientError: if there is an error communicating with Mercado Pago
         """
 
     @abstractmethod
@@ -59,4 +65,6 @@ class AbstractMercadoPagoClient(ABC):
         :param payment_id: The unique identifier of the payment in Mercado Pago.
         :type payment_id: str
         :return: An instance of MPPayment representing the fetched payment.
+        :rtype: MPPayment
+        :raises MPClientError: if there is an error communicating with Mercado Pago
         """

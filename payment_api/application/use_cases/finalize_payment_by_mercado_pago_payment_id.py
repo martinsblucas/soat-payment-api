@@ -1,5 +1,7 @@
 """Use case to finalize a payment using Mercado Pago payment ID"""
 
+import logging
+
 from payment_api.application.commands import (
     FinalizePaymentByMercadoPagoPaymentIdCommand,
 )
@@ -10,6 +12,8 @@ from payment_api.application.use_cases.ports import (
 from payment_api.domain.entities import PaymentIn, PaymentOut
 from payment_api.domain.ports import PaymentRepository
 from payment_api.domain.value_objects import PaymentStatus
+
+logger = logging.getLogger(__name__)
 
 
 class FinalizePaymentByMercadoPagoPaymentIdUseCase:
@@ -28,11 +32,21 @@ class FinalizePaymentByMercadoPagoPaymentIdUseCase:
     ) -> PaymentOut:
         """Finalize a payment using Mercado Pago payment ID
 
-        :param command: FinalizePaymentByMercadoPagoPaymentIdCommand
+        :param command: command containing the Mercado Pago payment ID
         :type command: FinalizePaymentByMercadoPagoPaymentIdCommand
         :return: Finalized Payment
         :rtype: PaymentOut
+        :raises NotFound: if the payment is not found
+        :raises PersistenceError: if there is an error during data persistence to
+            the repository
+        :raises ValueError: if the payment cannot be finalized due to its current status
+        :raises MPClientError: if there is an error communicating with Mercado Pago
         """
+
+        logger.info(
+            "Called the use case to finalize payment with Mercado Pago payment ID %s",
+            command.payment_id,
+        )
 
         # find payment in Mercado Pago
         mp_payment = await self.mercado_pago_client.find_payment_by_id(

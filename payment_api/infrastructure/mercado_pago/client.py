@@ -1,5 +1,6 @@
 """Client for interacting with the Mercado Pago API."""
 
+import logging
 from typing import NoReturn
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError
@@ -15,6 +16,8 @@ from payment_api.infrastructure.mercado_pago.schemas import (
     MPOrder,
     MPPayment,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class MercadoPagoAPIClient:
@@ -42,15 +45,25 @@ class MercadoPagoAPIClient:
             f"/pos/{self.pos}/qrs"
         )
 
+        err_prefix = "Failed to create dynamic QR order in Mercado Pago API: "
         headers = {**self._get_headers(), "Content-Type": "application/json"}
-        request = order_data.model_dump()
+        logger.debug(
+            "Calling url %s with method POST and data: %s",
+            url,
+            order_data.model_dump_json(),
+        )
+
         try:
-            response = await self.http_client.post(url, json=request, headers=headers)
+
+            response = await self.http_client.post(
+                url, json=order_data.model_dump(), headers=headers
+            )
+
             response.raise_for_status()
         except HTTPStatusError as exc:
-            self._handle_http_status_error(exc)
+            self._handle_http_status_error(exc, err_prefix)
         except HTTPError as exc:
-            self._handle_http_error(exc)
+            self._handle_http_error(exc, err_prefix)
 
         return MPCreateOrderOut(**response.json())
 
@@ -65,13 +78,15 @@ class MercadoPagoAPIClient:
         """
 
         url = f"{self.base_url}/merchant_orders/{order_id}"
+        err_prefix = "Failed to find order in Mercado Pago API: "
+        logger.debug("Calling url %s with method GET", url)
         try:
             response = await self.http_client.get(url, headers=self._get_headers())
             response.raise_for_status()
         except HTTPStatusError as exc:
-            self._handle_http_status_error(exc)
+            self._handle_http_status_error(exc, err_prefix)
         except HTTPError as exc:
-            self._handle_http_error(exc)
+            self._handle_http_error(exc, err_prefix)
 
         return MPOrder(**response.json())
 
@@ -86,13 +101,15 @@ class MercadoPagoAPIClient:
         """
 
         url = f"{self.base_url}/v1/payments/{payment_id}"
+        err_prefix = "Failed to find payment in Mercado Pago API: "
+        logger.debug("Calling url %s with method GET", url)
         try:
             response = await self.http_client.get(url, headers=self._get_headers())
             response.raise_for_status()
         except HTTPStatusError as exc:
-            self._handle_http_status_error(exc)
+            self._handle_http_status_error(exc, err_prefix)
         except HTTPError as exc:
-            self._handle_http_error(exc)
+            self._handle_http_error(exc, err_prefix)
 
         return MPPayment(**response.json())
 
@@ -100,13 +117,15 @@ class MercadoPagoAPIClient:
         """Generate headers for Mercado Pago API requests."""
         return {"Authorization": f"Bearer {self.access_token}"}
 
-    def _handle_http_status_error(self, exc: HTTPStatusError) -> NoReturn:
+    def _handle_http_status_error(
+        self, exc: HTTPStatusError, err_prefix: str
+    ) -> NoReturn:
         """Handle HTTP errors from Mercado Pago API requests."""
         if exc.response is not None and exc.response.status_code == 404:
             raise MPNotFoundError("Mercado Pago resource not found.") from exc
 
-        raise MPClientError(f"Mercado Pago API error: {str(exc)}") from exc
+        raise MPClientError(f"{err_prefix}{str(exc)}") from exc
 
-    def _handle_http_error(self, exc: HTTPError) -> NoReturn:
+    def _handle_http_error(self, exc: HTTPError, err_prefix: str) -> NoReturn:
         """Handle generic errors from Mercado Pago API requests."""
-        raise MPClientError(f"Mercado Pago API error: {str(exc)}") from exc
+        raise MPClientError(f"{err_prefix}{str(exc)}") from exc
