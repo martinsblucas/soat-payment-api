@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 def get_session_manager(settings: DatabaseSettings) -> SessionManager:
     """Return a SessionManager instance"""
-    return SessionManager(host=settings.DSN, engine_kwargs={"echo": settings.ECHO})
+    return SessionManager(settings=settings)
 
 
 @asynccontextmanager

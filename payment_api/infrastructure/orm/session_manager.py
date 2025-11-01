@@ -1,7 +1,7 @@
 """The database session manager"""
 
 import contextlib
-from typing import Any, AsyncIterator
+from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import declarative_base
+
+from payment_api.infrastructure.config import DatabaseSettings
 
 Base = declarative_base()
 
@@ -24,9 +26,8 @@ class SessionManagerNotInitializedError(Exception):
 class SessionManager:
     """The database session manager"""
 
-    def __init__(self, host: str, engine_kwargs: dict[str, Any] | None = None):
-        engine_kwargs = engine_kwargs or {}
-        self._engine = create_async_engine(host, **engine_kwargs)
+    def __init__(self, settings: DatabaseSettings):
+        self._engine = create_async_engine(settings.DSN, echo=settings.ECHO)
         self._sessionmaker = async_sessionmaker(autocommit=False, bind=self._engine)
 
     async def close(self):
