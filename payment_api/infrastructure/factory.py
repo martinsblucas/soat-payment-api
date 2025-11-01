@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from aioboto3 import Session as AIOBoto3Session
-from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +12,6 @@ from payment_api.adapters.inbound.listeners import (
     OrderCreatedHandler,
     OrderCreatedListener,
 )
-from payment_api.adapters.inbound.rest.v1 import payment_router_v1
 from payment_api.adapters.out import (
     BotoPaymentClosedPublisher,
     MPPaymentGateway,
@@ -35,7 +33,6 @@ from payment_api.domain.ports import (
     PaymentRepository,
 )
 from payment_api.infrastructure.config import (
-    APPSettings,
     AWSSettings,
     DatabaseSettings,
     HTTPClientSettings,
@@ -49,41 +46,6 @@ from payment_api.infrastructure.orm import SessionManager
 from payment_api.infrastructure.qr_code_renderer import QRCodeRenderer
 
 logger = logging.getLogger(__name__)
-
-
-def get_app_settings() -> APPSettings:
-    """Return an APPSettings instance"""
-    return APPSettings()
-
-
-def get_database_settings() -> DatabaseSettings:
-    """Return a DatabaseSettings instance"""
-    return DatabaseSettings()
-
-
-def get_http_client_settings() -> HTTPClientSettings:
-    """Return an HTTPClientSettings instance"""
-    return HTTPClientSettings()
-
-
-def get_mercado_pago_settings() -> MercadoPagoSettings:
-    """Return a MercadoPagoSettings instance"""
-    return MercadoPagoSettings()
-
-
-def get_aws_settings() -> AWSSettings:
-    """Return an AWSSettings instance"""
-    return AWSSettings()
-
-
-def get_order_created_listener_settings() -> OrderCreatedListenerSettings:
-    """Return an OrderCreatedListenerSettings instance"""
-    return OrderCreatedListenerSettings()
-
-
-def get_payment_closed_publisher_settings() -> PaymentClosedPublisherSettings:
-    """Return a PaymentClosedPublisherSettings instance"""
-    return PaymentClosedPublisherSettings()
 
 
 def get_session_manager(settings: DatabaseSettings) -> SessionManager:
@@ -209,10 +171,12 @@ def create_payment_from_order_use_case_factory(
         mp_api_client = get_mercado_pago_api_client(
             settings=mercado_pago_settings, http_client=http_client
         )
+
         gateway = get_payment_gateway(
             settings=mercado_pago_settings,
             mp_client=mp_api_client,
         )
+
         return get_create_payment_from_order_use_case(
             payment_repository=repository,
             payment_gateway=gateway,
@@ -242,61 +206,3 @@ def create_order_created_listener(
 ) -> OrderCreatedListener:
     """Create an OrderCreatedListener instance"""
     return OrderCreatedListener(session=session, handler=handler, settings=settings)
-
-
-def create_api() -> FastAPI:
-    """Create FastAPI application instance"""
-
-    logger.info("Creating FastAPI application instance")
-    app = FastAPI(lifespan=fastapi_lifespan)
-    logger.info("Including payment router v1")
-    app.include_router(payment_router_v1)
-    return app
-
-
-@asynccontextmanager
-async def fastapi_lifespan(app_instance: FastAPI):
-    """Lifespan context manager for FastAPI application"""
-
-    # Application state setup
-    logger.info("Loading application settings")
-    app_instance.state.app_settings = get_app_settings()
-    logger.info("Loading database settings")
-    app_instance.state.database_settings = get_database_settings()
-    logger.info("Loading HTTP client settings")
-    app_instance.state.http_client_settings = get_http_client_settings()
-    logger.info("Loading MercadoPago settings")
-    app_instance.state.mercado_pago_settings = get_mercado_pago_settings()
-    logger.info("Loading AWS settings")
-    app_instance.state.aws_settings = get_aws_settings()
-    logger.info("Loading PaymentClosedPublisher settings")
-    app_instance.state.payment_closed_publisher_settings = (
-        get_payment_closed_publisher_settings()
-    )
-
-    app_instance.title = app_instance.state.app_settings.TITLE
-    app_instance.version = app_instance.state.app_settings.VERSION
-    app_instance.root_path = app_instance.state.app_settings.ROOT_PATH
-    logger.info(
-        "Application settings loaded title=%s version=%s root_path=%s",
-        app_instance.title,
-        app_instance.version,
-        app_instance.root_path,
-    )
-
-    logger.info("Starting session manager")
-    app_instance.state.session_manager = get_session_manager(
-        settings=app_instance.state.database_settings
-    )
-
-    logger.info("Starting HTTP client")
-    app_instance.state.http_client = get_http_client(
-        settings=app_instance.state.http_client_settings
-    )
-
-    # Application state teardown
-    yield
-    logger.info("Closing session manager")
-    await app_instance.state.session_manager.close()
-    logger.info("Closing HTTP client")
-    await app_instance.state.http_client.aclose()

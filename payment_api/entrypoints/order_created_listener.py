@@ -5,6 +5,13 @@ import logging
 import signal
 
 from payment_api.infrastructure import factory
+from payment_api.infrastructure.config import (
+    AWSSettings,
+    DatabaseSettings,
+    HTTPClientSettings,
+    MercadoPagoSettings,
+    OrderCreatedListenerSettings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,15 +35,15 @@ async def main():
     shutdown_handler = GracefulShutdown()
     try:
         logger.info("Loading database settings")
-        db_settings = factory.get_database_settings()
+        db_settings = DatabaseSettings()
         logger.info("Loading HTTP client settings")
-        http_client_settings = factory.get_http_client_settings()
+        http_client_settings = HTTPClientSettings()
         logger.info("Loading AWS settings")
-        aws_settings = factory.get_aws_settings()
+        aws_settings = AWSSettings()
         logger.info("Loading Mercado Pago settings")
-        mercado_pago_settings = factory.get_mercado_pago_settings()
+        mercado_pago_settings = MercadoPagoSettings()
         logger.info("Loading order created listener settings")
-        order_created_listener_settings = factory.get_order_created_listener_settings()
+        order_created_listener_settings = OrderCreatedListenerSettings()
         logger.info("Starting session manager")
         session_manager = factory.get_session_manager(settings=db_settings)
         logger.info("Starting HTTP client")
