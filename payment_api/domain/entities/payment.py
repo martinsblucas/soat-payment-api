@@ -49,8 +49,8 @@ class PaymentIn(BaseModel):
         is_valid_new_status = new_payment_status != PaymentStatus.OPENED
         if not is_valid_status or not is_valid_new_status:
             raise ValueError(
-                f"Unable to update a payment status from {self.payment_status} to "
-                f"{new_payment_status}"
+                f"Unable to update a payment status from {self.payment_status.value} "
+                f"to {new_payment_status.value}"
             )
 
         return self
