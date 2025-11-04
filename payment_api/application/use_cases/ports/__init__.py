@@ -6,6 +6,7 @@ from .mercado_pago_client import (
     MPOrder,
     MPOrderStatus,
     MPPayment,
+    MPPaymentOrder,
 )
 from .qr_code_renderer import AbstractQRCodeRenderer
 
@@ -16,4 +17,5 @@ __all__ = [
     "MPOrderStatus",
     "MPOrder",
     "MPPayment",
+    "MPPaymentOrder",
 ]

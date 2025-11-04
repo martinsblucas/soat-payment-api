@@ -84,7 +84,7 @@ class FinalizePaymentByMercadoPagoPaymentIdUseCase:
         )
 
         payment = await self.payment_repository.save(
-            payment=PaymentIn.model_validate(payment)
+            payment=PaymentIn.model_validate(payment.model_dump())
         )
 
         # publish payment closed event if payment is closed
