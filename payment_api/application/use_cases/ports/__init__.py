@@ -1,5 +1,6 @@
 """Ports for the use cases"""
 
+from .abstract_qr_code_renderer import AbstractQRCodeRenderer
 from .mercado_pago_client import (
     AbstractMercadoPagoClient,
     MPClientError,
@@ -8,7 +9,6 @@ from .mercado_pago_client import (
     MPPayment,
     MPPaymentOrder,
 )
-from .qr_code_renderer import AbstractQRCodeRenderer
 
 __all__ = [
     "AbstractQRCodeRenderer",
