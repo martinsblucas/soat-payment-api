@@ -27,6 +27,17 @@ class DatabaseSettings(BaseSettings):
     ECHO: bool = False
 
 
+class TestDatabaseSettings(BaseSettings):
+    """Test Database specific settings"""
+
+    model_config = SettingsConfigDict(
+        env_file="settings/test_database.env", env_file_encoding="utf-8"
+    )
+
+    DSN: str
+    ECHO: bool = False
+
+
 class HTTPClientSettings(BaseSettings):
     """HTTP Client specific settings"""
 

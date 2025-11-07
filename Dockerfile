@@ -13,7 +13,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --only=main --no-root
+RUN poetry install --no-root
 
 FROM python:3.14-alpine AS runtime
 
@@ -39,7 +39,10 @@ USER soat
 
 COPY --chown=${USER_UID}:${USER_UID} ./docker-entrypoint ./docker-entrypoint
 COPY --chown=${USER_UID}:${USER_UID} ./payment_api ./payment_api
+COPY --chown=${USER_UID}:${USER_UID} ./tests ./tests
 COPY --chown=${USER_UID}:${USER_UID} ./logging.ini ./logging.ini
+COPY --chown=${USER_UID}:${USER_UID} ./pytest.ini ./pytest.ini
+COPY --chown=${USER_UID}:${USER_UID} ./alembic.ini ./alembic.ini
 
 EXPOSE 8000
 

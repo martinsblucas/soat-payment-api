@@ -13,6 +13,22 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - soat-payment
+
+  test_db:
+    image: postgres:17.6-alpine
+    container_name: payment-api-test-database
+    restart: always
+    env_file:
+      - ./docker-compose-env/test_database.env
+    ports:
+      - ${POSTGRES_TEST_PORT:-5433}:5432
+    expose:
+      - "5432"
+    volumes:
+      - db-dev-data:/var/lib/postgresql/data
+    networks:
+      - soat-payment
+
   api:
     container_name: payment-api
     image: payment-api:${PAYMENT_API_VERSION:-dev}
@@ -29,8 +45,11 @@ services:
     entrypoint: ["sh", "/app/docker-entrypoint/start_dev_api.sh"]
     volumes:
       - ./payment_api:/app/payment_api
+      - ./tests:/app/tests
       - ./docker-entrypoint:/app/docker-entrypoint
+      - ./alembic.ini:/app/alembic.ini
       - ./logging.ini:/app/logging.ini
+      - ./pytest.ini:/app/pytest.ini
       - ./settings:/app/settings
     depends_on:
       - db
@@ -55,6 +74,7 @@ services:
 
 volumes:
   db-data:
+  db-dev-data:
 
 networks:
   soat-payment:
