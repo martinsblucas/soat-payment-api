@@ -17,7 +17,7 @@ services:
     build:
       context: .
       target: development
-    entrypoint: ["pytest"]
+    entrypoint: ["tail", "-f", "/dev/null"]
     volumes:
       - ./settings:/app/settings
     depends_on:

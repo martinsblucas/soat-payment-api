@@ -87,6 +87,7 @@ COPY --chown=${USER_UID}:${USER_UID} ./logging.ini ./logging.ini
 COPY --chown=${USER_UID}:${USER_UID} ./pytest.ini ./pytest.ini
 COPY --chown=${USER_UID}:${USER_UID} ./alembic.ini ./alembic.ini
 COPY --chown=${USER_UID}:${USER_UID} ./pyproject.toml ./pyproject.toml
+COPY --chown=${USER_UID}:${USER_UID} ./.coveragerc ./.coveragerc
 
 EXPOSE 8000
 

@@ -41,8 +41,23 @@ jobs:
           ECHO=True
           EOF
 
+      - name: Start test services
+        run: docker compose -f docker-compose.test.yml up -d
+
       - name: Run tests
-        run: docker compose -f docker-compose.test.yml up --abort-on-container-exit api
+        run: docker compose -f docker-compose.test.yml exec api pytest
+
+      - name: Copy coverage report
+        run: docker cp payment-api:/app/coverage.xml ./coverage.xml
+
+      - name: Destroy test services
+        run: docker compose -f docker-compose.test.yml down -v
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage.xml
 
   sonarqube:
     name: SonarQube
@@ -51,6 +66,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: ./
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@40f5b61913e891f9d316696628698051136015be
